@@ -17,13 +17,17 @@ struct ContentView: View {
             if isMeditating {
                 Text("Time Remaining: \(timeRemaining)")
                     .font(.headline)
-                
-                Circle()
-                    .stroke(lineWidth: 5)
-                    .foregroundColor(.blue)
-                    .scaleEffect(timeRemaining % 2 == 0 ? 1.1 : 0.9)  // Simple breathing animation
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 10)
+                    
+                    Circle()
+                        .trim(from: 0, to: 1 - (CGFloat(timeRemaining) / 60))
+                        .stroke(Color.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 1), value: timeRemaining)
+                }
                     .frame(width: 100, height: 100)
-                    .animation(.easeInOut(duration: 1), value: timeRemaining)
 
                 Button("End Session") {
                     stopMeditation()
