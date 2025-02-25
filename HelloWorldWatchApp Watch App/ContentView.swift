@@ -51,6 +51,7 @@ struct MeditationSessionView: View {
                         .animation(.linear(duration: 1), value: timeRemaining)
                 }
                     .frame(width: 100, height: 100)
+                    .navigationBarBackButtonHidden(true)
 
                 Button("End Session") {
                     stopMeditation()
@@ -80,7 +81,7 @@ struct MeditationSessionView: View {
         .onAppear {
             resetTimer()
         }
-        .padding()
+        .padding(.top, 20)
     }
 
     func startMeditation() {
