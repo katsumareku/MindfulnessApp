@@ -56,6 +56,10 @@ struct ContentView: View {
                 .padding()
                 .buttonStyle(.borderedProminent)
             }
+            
+            NavigationLink("View History", destination: HistoryView())
+                .padding()
+                .buttonStyle(.bordered)
         }
         .onAppear {
             resetTimer()
@@ -78,6 +82,10 @@ struct ContentView: View {
     func stopMeditation() {
         isMeditating = false
         timer?.invalidate()
+        
+        WKInterfaceDevice.current().play(.success)
+        
+        saveSession(duration: selectedDuration)
     }
 
     func resetTimer() {
@@ -91,6 +99,22 @@ func formatTime(_ seconds: Int) -> String {
     formatter.allowedUnits = [.minute, .second]
     formatter.zeroFormattingBehavior = .pad
     return formatter.string(from: TimeInterval(seconds)) ?? "0:00"
+}
+
+func saveSession(duration: Int) {
+    var history = UserDefaults.standard.array(forKey: "meditationHistory") as? [Int] ?? []
+    history.append(duration)
+    UserDefaults.standard.set(history, forKey: "meditationHistory")
+}
+
+struct HistoryView: View {
+    let history = UserDefaults.standard.array(forKey: "meditationHistory") as? [Int] ?? []
+    var body: some View {
+        List(history, id: \.self) { session in
+            Text(formatTime(session))
+        }
+        .navigationTitle("History")
+    }
 }
 
 #Preview {
