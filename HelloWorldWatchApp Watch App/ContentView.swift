@@ -7,7 +7,27 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct HomeScreenView: View {
+    var body: some View {
+        NavigationView {
+            VStack {
+                Text("Welcome")
+                    .font(.title)
+                    .padding()
+                
+                NavigationLink("Start Meditation", destination: MeditationSessionView())
+                    .padding()
+                    .buttonStyle(.borderedProminent)
+                
+                NavigationLink("History", destination: HistoryView())
+                    .padding()
+                    .buttonStyle(.bordered)
+            }
+        }
+    }
+}
+
+struct MeditationSessionView: View {
     @State private var timeRemaining = 60
     @State private var isMeditating = false
     @State private var timer: Timer?
@@ -56,10 +76,6 @@ struct ContentView: View {
                 .padding()
                 .buttonStyle(.borderedProminent)
             }
-            
-            NavigationLink("View History", destination: HistoryView())
-                .padding()
-                .buttonStyle(.bordered)
         }
         .onAppear {
             resetTimer()
@@ -118,5 +134,5 @@ struct HistoryView: View {
 }
 
 #Preview {
-    ContentView()
+    HomeScreenView()
 }
