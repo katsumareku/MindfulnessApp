@@ -37,21 +37,7 @@ struct MeditationSessionView: View {
     var body: some View {
         VStack {
             if isMeditating {
-                Text("Time Remaining: \(formatTime(timeRemaining))")
-                    .font(.headline)
-                
-                ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 10)
-                    
-                    Circle()
-                        .trim(from: 0, to: 1 - (CGFloat(timeRemaining) / CGFloat(selectedDuration)))
-                        .stroke(Color.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .animation(.linear(duration: 1), value: timeRemaining)
-                }
-                    .frame(width: 100, height: 100)
-                    .navigationBarBackButtonHidden(true)
+                MeditationTimerView(timeRemaining: $timeRemaining, selectedDuration: $selectedDuration, isMeditating: $isMeditating)
 
                 Button("End Session") {
                     stopMeditation()
@@ -59,17 +45,7 @@ struct MeditationSessionView: View {
                 .padding()
                 .buttonStyle(.bordered)
             } else {
-                Text("Select Session Length")
-                    .font(.headline)
-                
-                Picker("Duration", selection: $selectedDuration) {
-                    Text("1 min").tag(60)
-                    Text("3 min").tag(180)
-                    Text("5 min").tag(300)
-                    Text("10 min").tag(600)
-                }
-                .frame(height: 80)
-                .pickerStyle(.wheel)
+                DurationPickerView(selectedDuration: $selectedDuration)
 
                 Button("Start Session") {
                     startMeditation()
@@ -108,6 +84,54 @@ struct MeditationSessionView: View {
     func resetTimer() {
         stopMeditation()
         timeRemaining = selectedDuration
+    }
+}
+
+struct MeditationTimerView: View {
+    @Binding var timeRemaining: Int
+    @Binding var selectedDuration: Int
+    @Binding var isMeditating: Bool
+    
+    var body: some View {
+        VStack {
+            if isMeditating {
+                Text("Time Remaining: \(formatTime(timeRemaining))")
+                    .font(.headline)
+                
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 10)
+                    
+                    Circle()
+                        .trim(from: 0, to: 1 - (CGFloat(timeRemaining) / CGFloat(selectedDuration)))
+                        .stroke(Color.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 1), value: timeRemaining)
+                }
+                    .frame(width: 100, height: 100)
+                    .navigationBarBackButtonHidden(true)
+            }
+        }
+    }
+}
+
+struct DurationPickerView: View {
+    @Binding var selectedDuration: Int
+    
+    var body: some View {
+        VStack {
+            Text("Select Session Length")
+                .font(.headline)
+            
+            Picker("Duration", selection: $selectedDuration) {
+                Text("1 min").tag(60)
+                Text("3 min").tag(180)
+                Text("5 min").tag(300)
+                Text("10 min").tag(600)
+            }
+            .frame(height: 80)
+            .pickerStyle(.wheel)
+        }
     }
 }
 
