@@ -15,7 +15,7 @@ struct HomeScreenView: View {
                     .font(.title)
                     .padding()
                 
-                NavigationLink("Start Meditation", destination: MeditationSessionView())
+                NavigationLink("Meditate", destination: MeditationSessionView())
                     .padding()
                     .buttonStyle(.borderedProminent)
                 
@@ -45,13 +45,7 @@ struct MeditationSessionView: View {
                 .padding()
                 .buttonStyle(.bordered)
             } else {
-                DurationPickerView(selectedDuration: $selectedDuration)
-
-                Button("Start Session") {
-                    startMeditation()
-                }
-                .padding()
-                .buttonStyle(.borderedProminent)
+                DurationPickerView(selectedDuration: $selectedDuration, startMeditation: startMeditation)
             }
         }
         .onAppear {
@@ -82,8 +76,9 @@ struct MeditationSessionView: View {
     }
 
     func resetTimer() {
-        stopMeditation()
-        timeRemaining = selectedDuration
+        if !isMeditating {
+            timeRemaining = selectedDuration
+        }
     }
 }
 
@@ -117,21 +112,45 @@ struct MeditationTimerView: View {
 
 struct DurationPickerView: View {
     @Binding var selectedDuration: Int
+    let startMeditation: () -> Void
+    
+    let durations = [60, 180, 300, 600]
     
     var body: some View {
         VStack {
-            Text("Select Session Length")
-                .font(.headline)
-            
-            Picker("Duration", selection: $selectedDuration) {
-                Text("1 min").tag(60)
-                Text("3 min").tag(180)
-                Text("5 min").tag(300)
-                Text("10 min").tag(600)
+            HStack {
+                Spacer()
+                Text("Duration")
+                    .font(.caption)
+                    .foregroundColor(.blue)
             }
-            .frame(height: 80)
-            .pickerStyle(.wheel)
+            .padding([.top, .trailing], 5)
+            
+            GeometryReader { geometry in
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        ForEach(durations, id: \.self) { duration in
+                            Button(action: {
+                                selectedDuration = duration
+                                startMeditation()
+                            }) {
+                                Text(formatTime(duration))
+                                    .font(.headline)
+                                    .frame(width: 80, height: 80)
+                                    .background(Circle().fill(Color.blue))
+                                    .foregroundColor(.white)
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                                    .shadow(radius: 5)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                }
+            }
+            .frame(height: 180)
         }
+        .frame(maxWidth: .infinity, alignment: .top)
+        .padding(.top, -20)
     }
 }
 
