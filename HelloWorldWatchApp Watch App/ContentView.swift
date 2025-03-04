@@ -191,7 +191,7 @@ struct CustomDurationPickerView: View {
                 
                 // Foreground Circle (blue fill animation)
                 Circle()
-                    .trim(from: 0.0, to: customDuration / 60) // Fill dynamically
+                    .trim(from: 0.0, to: customDuration > 1 ? customDuration / 60 : 0.0)
                     .stroke(Color.blue, lineWidth: 5)
                     .frame(width: 120, height: 120)
                     .rotationEffect(.degrees(-90)) // Start from top
@@ -203,7 +203,7 @@ struct CustomDurationPickerView: View {
                     .frame(width: 100, height: 100)
                     .background(Circle().fill(Color.blue))
                     .focusable(true)
-                    .digitalCrownRotation($customDuration, from: 1, through: 60, by: 1.0)
+                    .digitalCrownRotation($customDuration, from: 1, through: 60, sensitivity: .low)
                     .focused($isFocused)
             }
             .onAppear { isFocused = true }
