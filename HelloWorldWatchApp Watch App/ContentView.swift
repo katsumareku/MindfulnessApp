@@ -184,9 +184,18 @@ struct CustomDurationPickerView: View {
                 .padding(.top)
             
             ZStack {
+                // Background Circle (white)
                 Circle()
+                    .stroke(Color.white.opacity(0.3), lineWidth: 5)
+                    .frame(width: 120, height: 120)
+                
+                // Foreground Circle (blue fill animation)
+                Circle()
+                    .trim(from: 0.0, to: customDuration / 60) // Fill dynamically
                     .stroke(Color.blue, lineWidth: 5)
                     .frame(width: 120, height: 120)
+                    .rotationEffect(.degrees(-90)) // Start from top
+                    .animation(.easeInOut(duration: 0.2), value: customDuration)
                 
                 Text("\(Int(customDuration)) min")
                     .font(.title2)
