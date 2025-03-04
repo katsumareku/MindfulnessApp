@@ -131,6 +131,17 @@ struct DurationPickerView: View {
             GeometryReader { geometry in
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        
+                        NavigationLink(destination: CustomDurationPickerView(selectedDuration: $selectedDuration, startMeditation: startMeditation)) {
+                                                    Text("Custom")
+                                                        .font(.headline)
+                                                        .frame(width: 80, height: 80)
+                                                        .background(Circle().fill(Color.gray))
+                                                        .foregroundColor(.white)
+                                                        .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                                                        .shadow(radius: 5)
+                        }
+                        
                         ForEach(durations, id: \.self) { duration in
                             Button(action: {
                                 selectedDuration = duration
@@ -144,16 +155,6 @@ struct DurationPickerView: View {
                                     .overlay(Circle().stroke(Color.white, lineWidth: 3))
                                     .shadow(radius: 5)
                             }
-                        }
-                
-                        NavigationLink(destination: CustomDurationPickerView(selectedDuration: $selectedDuration, startMeditation: startMeditation)) {
-                                                    Text("Custom")
-                                                        .font(.headline)
-                                                        .frame(width: 80, height: 80)
-                                                        .background(Circle().fill(Color.gray))
-                                                        .foregroundColor(.white)
-                                                        .overlay(Circle().stroke(Color.white, lineWidth: 3))
-                                                        .shadow(radius: 5)
                         }
                     }
                     .padding(.horizontal, 10)
