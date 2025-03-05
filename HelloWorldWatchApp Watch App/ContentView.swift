@@ -15,7 +15,7 @@ struct HomeScreenView: View {
                     .font(.title)
                     .padding()
                 
-                NavigationLink("Start Meditation", destination: MeditationSessionView())
+                NavigationLink("Meditate", destination: MeditationSessionView())
                     .padding()
                     .buttonStyle(.borderedProminent)
                 
@@ -33,25 +33,19 @@ struct MeditationSessionView: View {
     @State private var timer: Timer?
     @State private var selectedDuration = 60
     let durations = [60, 180, 300, 600] // 1, 3, 5, 10 mins in seconds
-
+    
     var body: some View {
         VStack {
             if isMeditating {
                 MeditationTimerView(timeRemaining: $timeRemaining, selectedDuration: $selectedDuration, isMeditating: $isMeditating)
-
+                
                 Button("End Session") {
                     stopMeditation()
                 }
                 .padding()
                 .buttonStyle(.bordered)
             } else {
-                DurationPickerView(selectedDuration: $selectedDuration)
-
-                Button("Start Session") {
-                    startMeditation()
-                }
-                .padding()
-                .buttonStyle(.borderedProminent)
+                DurationPickerView(selectedDuration: $selectedDuration, startMeditation: startMeditation)
             }
         }
         .onAppear {
@@ -59,7 +53,7 @@ struct MeditationSessionView: View {
         }
         .padding(.top, 20)
     }
-
+    
     func startMeditation() {
         isMeditating = true
         timeRemaining = selectedDuration
@@ -71,7 +65,7 @@ struct MeditationSessionView: View {
             }
         }
     }
-
+    
     func stopMeditation() {
         isMeditating = false
         timer?.invalidate()
@@ -80,10 +74,11 @@ struct MeditationSessionView: View {
         
         saveSession(duration: selectedDuration)
     }
-
+    
     func resetTimer() {
-        stopMeditation()
-        timeRemaining = selectedDuration
+        if !isMeditating {
+            timeRemaining = selectedDuration
+        }
     }
 }
 
@@ -95,21 +90,15 @@ struct MeditationTimerView: View {
     var body: some View {
         VStack {
             if isMeditating {
-                Text("Time Remaining: \(formatTime(timeRemaining))")
-                    .font(.headline)
-                
                 ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 10)
+                    CircularProgressView(progress: 1 - (CGFloat(timeRemaining) / CGFloat(selectedDuration)), size: 100, lineWidth: 10, color: .blue)
                     
-                    Circle()
-                        .trim(from: 0, to: 1 - (CGFloat(timeRemaining) / CGFloat(selectedDuration)))
-                        .stroke(Color.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .animation(.linear(duration: 1), value: timeRemaining)
+                    Text(formatTime(timeRemaining))
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
                 }
-                    .frame(width: 100, height: 100)
-                    .navigationBarBackButtonHidden(true)
+                .frame(width: 100, height: 100)
+                .navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -117,21 +106,90 @@ struct MeditationTimerView: View {
 
 struct DurationPickerView: View {
     @Binding var selectedDuration: Int
+    let startMeditation: () -> Void
+    
+    let durations = [60, 180, 300, 600, 900]
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         VStack {
-            Text("Select Session Length")
-                .font(.headline)
-            
-            Picker("Duration", selection: $selectedDuration) {
-                Text("1 min").tag(60)
-                Text("3 min").tag(180)
-                Text("5 min").tag(300)
-                Text("10 min").tag(600)
+            HStack {
+                Spacer()
+                Text("Duration")
+                    .font(.caption)
+                    .foregroundColor(.blue)
             }
-            .frame(height: 80)
-            .pickerStyle(.wheel)
+            .padding([.top, .trailing], 5)
+            
+            GeometryReader { geometry in
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        
+                        NavigationLink(destination: CustomDurationPickerView(selectedDuration: $selectedDuration, startMeditation: startMeditation)) {
+                            CircularButtonView(title: "Custom", color: .gray)
+                        }
+                        
+                        ForEach(durations, id: \.self) { duration in
+                            Button(action: {
+                                selectedDuration = duration
+                                startMeditation()
+                            }) {
+                                CircularButtonView(title: formatTime(duration), color: .blue)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                }
+                .focused($isFocused)
+            }
+            .frame(height: 180)
         }
+        .frame(maxWidth: .infinity, alignment: .top)
+        .padding(.top, -20)
+        .onAppear {
+            isFocused = true
+        }
+    }
+}
+
+struct CustomDurationPickerView: View {
+    @Binding var selectedDuration: Int
+    let startMeditation: () -> Void
+    @State private var customDuration: Double = 1
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        VStack {
+            Text("Select Duration")
+                .font(.headline)
+                .padding(.top)
+            
+            ZStack {
+                CircularProgressView(
+                    progress: customDuration > 1 ? customDuration / 60 : 0.0,
+                    size: 120, lineWidth: 5, color: .blue)
+                
+                Text("\(Int(customDuration)) min")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .frame(width: 100, height: 100)
+                    .background(Circle().fill(Color.blue))
+                    .focusable(true)
+                    .digitalCrownRotation($customDuration, from: 1, through: 60, sensitivity: .low)
+                    .focused($isFocused)
+            }
+            .onAppear { isFocused = true }
+            
+            Spacer()
+            
+            Button("Start Meditation") {
+                selectedDuration = Int(customDuration) * 60
+                startMeditation()
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 10)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
