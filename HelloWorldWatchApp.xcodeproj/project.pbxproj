@@ -55,9 +55,24 @@
 		E361EA2B2CE4D4FC00B99A8D /* HelloWorldWatchApp Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "HelloWorldWatchApp Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E30A08CF2D7DF92A00E97CEE /* Exceptions for "HelloWorldWatchApp Watch App" folder in "HelloWorldWatchApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				sounds/oceanWaves.mp3,
+				sounds/rainSound.mp3,
+				sounds/whiteWaterfallNoise.mp3,
+			);
+			target = E361EA082CE4D4FB00B99A8D /* HelloWorldWatchApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E361EA132CE4D4FB00B99A8D /* HelloWorldWatchApp Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E30A08CF2D7DF92A00E97CEE /* Exceptions for "HelloWorldWatchApp Watch App" folder in "HelloWorldWatchApp" target */,
+			);
 			path = "HelloWorldWatchApp Watch App";
 			sourceTree = "<group>";
 		};
