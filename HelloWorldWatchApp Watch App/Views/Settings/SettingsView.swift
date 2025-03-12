@@ -7,7 +7,7 @@ struct SettingsView: View {
         List {
             NavigationLink(destination: SoundPickerView(settings: settings)) {
                 HStack {
-                    Text("Meditation Sound")
+                    Text("Default Sound")
                     Spacer()
                     Text(settings.currentSound.name)
                         .foregroundColor(.gray)

@@ -56,7 +56,7 @@ struct MeditationSessionView: View {
     func playAudio() {
         let sound = settings.currentSound
         
-        if let soundURL = Bundle.main.url(forResource: sound.filename, withExtension: sound.fileExtension) {
+        if !sound.filename.isEmpty, let soundURL = Bundle.main.url(forResource: sound.filename, withExtension: sound.fileExtension) {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
                 audioPlayer?.numberOfLoops = -1 // Loop indefinitely
@@ -65,7 +65,7 @@ struct MeditationSessionView: View {
                 print("Error loading audio: \(error)")
             }
         } else {
-            print("Audio file not found: \(sound.filename).\(sound.fileExtension)")
+            print("No sound selected or audio file not found")
         }
     }
     
@@ -79,7 +79,9 @@ struct MeditationSessionView: View {
                 stopMeditation()
             }
         }
-        playAudio()
+        if !settings.currentSound.filename.isEmpty {
+            playAudio()
+        }
     }
     
     func stopMeditation() {
