@@ -27,6 +27,16 @@ struct HomeScreenView: View {
                     .buttonStyle(.bordered)
             }
         }
+        .onAppear {
+            APIService.shared.registerDevice { result in
+                switch result {
+                case .success(let userId):
+                    print("Silently registered with user ID: \(userId)")
+                case .failure(let error):
+                    print("Silent registration failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 
