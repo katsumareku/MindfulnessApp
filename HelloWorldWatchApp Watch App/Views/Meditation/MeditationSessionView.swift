@@ -17,6 +17,9 @@ struct MeditationSessionView: View {
     @State private var selectedSoundIndex = 0
     @StateObject private var settings = MeditationSettings()
     @State private var showingSoundPicker = false
+    @State private var isSaving = false
+    @State private var sessionSaved = false
+    @State private var saveError: String? = nil
     
     let durations = [60, 180, 300, 600] // 1, 3, 5, 10 mins in seconds
     
@@ -39,6 +42,25 @@ struct MeditationSessionView: View {
                 // Selection screen
                 // Selection screen
                 VStack(spacing: 0) {
+                    
+                    if isSaving {
+                        Text("Saving session...")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        ProgressView()
+                            .padding(.bottom, 5)
+                    } else if sessionSaved {
+                        Text("Session saved!")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .padding(.bottom, 5)
+                    } else if let error = saveError {
+                        Text("Error: \(error)")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .padding(.bottom, 5)
+                    }
+                    
                     // Duration picker section
                     DurationPickerView(
                         selectedDuration: $selectedDuration,
@@ -51,6 +73,9 @@ struct MeditationSessionView: View {
         .animation(.easeInOut, value: isMeditating)
         .onAppear {
             resetTimer()
+            
+            sessionSaved = false
+            saveError = nil
         }
     }
     func playAudio() {
@@ -97,6 +122,37 @@ struct MeditationSessionView: View {
     func resetTimer() {
         if !isMeditating {
             timeRemaining = selectedDuration
+        }
+    }
+    
+    func saveSession(duration: Int) {
+        isSaving = true
+        sessionSaved = false
+        saveError = nil
+        
+        let focusRating: Int? = nil
+        
+        let soundUsed = settings.currentSound.filename.isEmpty ? nil : settings.currentSound.name
+        
+        APIService.shared.saveMeditationSession(duration: duration, focusRating: focusRating, soundUsed: soundUsed) {
+            success in DispatchQueue.main.async {
+                self.isSaving = false
+                
+                if success {
+                    self.sessionSaved = true
+                    print("Successfully saved meditation session to backend")
+                } else {
+                    self.saveError = "Failed to save"
+                    print("Failed to save meditation session")
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    if !self.isMeditating {
+                        self.sessionSaved = false
+                        self.saveError = nil
+                    }
+                }
+            }
         }
     }
 }
