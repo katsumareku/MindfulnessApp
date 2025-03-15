@@ -1,10 +1,3 @@
-//
-//  MeditationSessionView.swift
-//  HelloWorldWatchApp
-//
-//  Created by Jacek Kaczmarek on 09/03/2025.
-//
-
 import SwiftUI
 import AVFoundation
 
@@ -20,12 +13,27 @@ struct MeditationSessionView: View {
     @State private var isSaving = false
     @State private var sessionSaved = false
     @State private var saveError: String? = nil
+    @State private var showFocusRating = false
+    @State private var focusRating: Int? = nil
     
     let durations = [60, 180, 300, 600] // 1, 3, 5, 10 mins in seconds
     
     var body: some View {
         VStack(spacing: 8) {
-            if isMeditating {
+            if showFocusRating {
+                // Focus rating view
+                FocusRatingView(
+                    rating: $focusRating,
+                    onSave: {
+                        saveSession(duration: selectedDuration)
+                        showFocusRating = false
+                    },
+                    onSkip: {
+                        saveSession(duration: selectedDuration)
+                        showFocusRating = false
+                    }
+                )
+            } else if isMeditating {
                 // Active meditation session view
                 MeditationTimerView(timeRemaining: $timeRemaining, selectedDuration: $selectedDuration, isMeditating: $isMeditating)
                     .padding(.vertical, 10)
@@ -33,16 +41,14 @@ struct MeditationSessionView: View {
                 Spacer()
                 
                 Button("End Session") {
-                    stopMeditation()
+                    endMeditation()
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
                 .padding(.bottom, 10)
             } else {
                 // Selection screen
-                // Selection screen
                 VStack(spacing: 0) {
-                    
                     if isSaving {
                         Text("Saving session...")
                             .font(.caption)
@@ -71,6 +77,7 @@ struct MeditationSessionView: View {
             }
         }
         .animation(.easeInOut, value: isMeditating)
+        .animation(.easeInOut, value: showFocusRating)
         .onAppear {
             resetTimer()
             
@@ -78,6 +85,7 @@ struct MeditationSessionView: View {
             saveError = nil
         }
     }
+    
     func playAudio() {
         let sound = settings.currentSound
         
@@ -101,12 +109,23 @@ struct MeditationSessionView: View {
             if timeRemaining > 0 {
                 timeRemaining -= 1
             } else {
-                stopMeditation()
+                endMeditation()
             }
         }
         if !settings.currentSound.filename.isEmpty {
             playAudio()
         }
+    }
+    
+    func endMeditation() {
+        isMeditating = false
+        timer?.invalidate()
+        
+        WKInterfaceDevice.current().play(.success)
+        
+        audioPlayer?.stop()
+        showFocusRating = true
+        focusRating = nil
     }
     
     func stopMeditation() {
@@ -130,8 +149,6 @@ struct MeditationSessionView: View {
         sessionSaved = false
         saveError = nil
         
-        let focusRating: Int? = nil
-        
         let soundUsed = settings.currentSound.filename.isEmpty ? nil : settings.currentSound.name
         
         APIService.shared.saveMeditationSession(duration: duration, focusRating: focusRating, soundUsed: soundUsed) {
@@ -153,6 +170,69 @@ struct MeditationSessionView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+struct FocusRatingView: View {
+    @Binding var rating: Int?
+    var onSave: () -> Void
+    var onSkip: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("How focused were you?")
+                .font(.headline)
+                .padding(.top, 5)
+            
+            HStack(spacing: 8) {
+                ForEach(1...5, id: \.self) { value in
+                    Button(action: {
+                        rating = value
+                    }) {
+                        Image(systemName: rating == value ? "star.fill" : "star")
+                            .foregroundColor(rating == value ? .yellow : .gray)
+                            .font(.system(size: 20))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.vertical, 10)
+            
+            Text(ratingDescription)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(height: 30)
+                .padding(.horizontal, 5)
+            
+            Spacer()
+            
+            HStack {
+                Button("Save") {
+                    onSave()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(rating == nil)
+                
+                Button("Skip") {
+                    onSkip()
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(.bottom, 10)
+        }
+    }
+    
+    var ratingDescription: String {
+        guard let rating = rating else { return "Select a rating" }
+        
+        switch rating {
+        case 1: return "Very distracted"
+        case 2: return "Somewhat distracted"
+        case 3: return "Neutral focus"
+        case 4: return "Mostly focused"
+        case 5: return "Deeply focused"
+        default: return "Select a rating"
         }
     }
 }
