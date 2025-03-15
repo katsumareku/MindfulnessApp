@@ -29,7 +29,7 @@ struct HistoryView: View {
                         summaryStats
                     }
                 }
-                .navigationTitle("History")
+                .navigationTitle("Stats")
             } else {
                 Text("No meditation history found")
                     .foregroundColor(.secondary)
