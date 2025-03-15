@@ -19,9 +19,14 @@ struct HomeScreenView: View {
                     .padding()
                     .buttonStyle(.borderedProminent)
                 
-                NavigationLink("History", destination: HistoryView())
-                    .padding()
-                    .buttonStyle(.bordered)
+                NavigationLink(destination: HistoryView()) {
+                    HStack {
+                        Image(systemName: "chart.bar.fill")
+                        Text("Stats")
+                    }
+                }
+                .padding()
+                .buttonStyle(.bordered)
                 NavigationLink("Settings", destination: SettingsView())
                     .padding()
                     .buttonStyle(.bordered)
