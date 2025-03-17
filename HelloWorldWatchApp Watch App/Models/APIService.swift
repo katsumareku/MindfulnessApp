@@ -10,11 +10,18 @@ import Foundation
 class APIService {
     static let shared = APIService()
     
-    private let baseURL = "http://localhost:5001/api"
-    private var userId: Int?
+    private let baseURL: String
+    public private(set) var userId: Int?
     private let deviceId: String
     
     private init() {
+        
+#if targetEnvironment(simulator)
+    self.baseURL = "http://10.33.79.108:5001/api"
+#else
+    self.baseURL = "http://10.33.79.108:5001/api" // For the local IP of the real device
+#endif
+        
         if let storedDeviceId = UserDefaults.standard.string(forKey: "device_id") {
                     self.deviceId = storedDeviceId
                 } else {
@@ -25,6 +32,7 @@ class APIService {
     
     // Register device and get user ID
     func registerDevice(completion: @escaping (Result<Int, Error>) -> Void) {
+        print("Attempting to register device with ID: \(deviceId)")
         let url = URL(string: "\(baseURL)/users/register")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -34,6 +42,12 @@ class APIService {
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
+            print("Registration response received: \(String(describing: response))")
+            if let data = data {
+                print("Registration data: \(String(data: data, encoding: .utf8) ?? "none")")
+            }
+            print("Registration error: \(String(describing: error))")
+            
             if let error = error {
                 completion(.failure(error))
                 return
@@ -48,6 +62,7 @@ class APIService {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let userId = json["user_id"] as? Int {
                     self.userId = userId
+                    print("Successfully set userId to: \(userId)")
                     completion(.success(userId))
                 } else {
                     completion(.failure(NSError(domain: "APIService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])))
@@ -99,23 +114,51 @@ class APIService {
         }.resume()
     }
     
+    func checkServerConnection(completion: @escaping (Bool) -> Void) {
+        let url = URL(string: "\(baseURL)/health")! // Create a simple health endpoint
+        
+        URLSession.shared.dataTask(with: url) { _, response, error in
+            let isConnected = error == nil && (response as? HTTPURLResponse)?.statusCode == 200
+            completion(isConnected)
+        }.resume()
+    }
+    
     // Get meditation goals
     func getMeditationGoal(completion: @escaping (Result<MeditationGoalResponse, Error>) -> Void) {
+        print("Getting meditation goal. UserId: \(String(describing: userId))")
+        
         guard let userId = userId else {
+            // This shouldn't happen if registration worked
+            print("No userId available, attempting registration")
             registerDevice { result in
                 switch result {
-                case .success:
+                case .success(let newUserId):
+                    print("Registration successful, userId: \(newUserId)")
                     self.getMeditationGoal(completion: completion)
                 case .failure(let error):
+                    print("Registration failed: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             }
             return
         }
         
-        let url = URL(string: "\(baseURL)/goals/goals?user_id=\(userId)")!
+        let urlString = "\(baseURL)/goals/goals?user_id=\(userId)"
+        print("Fetching goal data from: \(urlString)")
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL: \(urlString)")
+            completion(.failure(NSError(domain: "APIService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
+            print("Goal fetch response: \(String(describing: response))")
+            if let data = data {
+                print("Goal fetch data: \(String(data: data, encoding: .utf8) ?? "none")")
+            }
+            print("Goal fetch error: \(String(describing: error))")
+            
             if let error = error {
                 completion(.failure(error))
                 return
@@ -130,8 +173,16 @@ class APIService {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .iso8601
                 let goal = try decoder.decode(MeditationGoalResponse.self, from: data)
+                print("Successfully decoded goal data: \(goal.dailyMinutes) minutes per day, \(goal.daysPerWeek) days per week")
                 completion(.success(goal))
             } catch {
+                print("Failed to decode goal data: \(error)")
+                
+                // Debugging - print the received JSON structure
+                if let json = try? JSONSerialization.jsonObject(with: data, options: []) {
+                    print("Received JSON structure: \(json)")
+                }
+                
                 completion(.failure(error))
             }
         }.resume()
