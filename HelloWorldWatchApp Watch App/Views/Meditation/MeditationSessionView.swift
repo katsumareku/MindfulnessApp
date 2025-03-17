@@ -33,6 +33,7 @@ struct MeditationSessionView: View {
                         showFocusRating = false
                     }
                 )
+        
             } else if isMeditating {
                 // Active meditation session view
                 MeditationTimerView(timeRemaining: $timeRemaining, selectedDuration: $selectedDuration, isMeditating: $isMeditating)
@@ -190,13 +191,15 @@ struct FocusRatingView: View {
                     Button(action: {
                         rating = value
                     }) {
-                        Image(systemName: rating == value ? "star.fill" : "star")
-                            .foregroundColor(rating == value ? .yellow : .gray)
-                            .font(.system(size: 20))
+                        Image(systemName: rating != nil && value <= rating! ? "star.fill" : "star")
+                            .foregroundColor(rating != nil && value <= rating! ? .yellow : .gray)
+                            .font(.system(size: 24))
+                            .frame(width: 36, height: 44)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
             }
+            .padding(.horizontal, 16)
             .padding(.vertical, 10)
             
             Text(ratingDescription)
@@ -221,6 +224,7 @@ struct FocusRatingView: View {
             }
             .padding(.bottom, 10)
         }
+        .navigationBarHidden(true)
     }
     
     var ratingDescription: String {
