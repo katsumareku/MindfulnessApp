@@ -60,8 +60,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				sounds/oceanWaves.mp3,
-				sounds/rainSound.mp3,
-				sounds/whiteWaterfallNoise.mp3,
 			);
 			target = E361EA082CE4D4FB00B99A8D /* HelloWorldWatchApp */;
 		};

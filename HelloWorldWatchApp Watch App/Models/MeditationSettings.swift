@@ -17,9 +17,9 @@ class MeditationSettings: ObservableObject {
     
     let availableSounds = [
         MeditationSound(name: "No Sound", filename: "", fileExtension: ""),
-        MeditationSound(name: "White Waterfall", filename: "whiteWaterfallNoise", fileExtension: "mp3"),
+        MeditationSound(name: "Waterfall", filename: "silentWaterfall", fileExtension: "mp3"),
         MeditationSound(name: "Ocean Waves", filename: "oceanWaves", fileExtension: "mp3"),
-        MeditationSound(name: "Rain", filename: "rainSound", fileExtension: "mp3"),
+        MeditationSound(name: "Rain", filename: "forestRain", fileExtension: "mp3"),
     ]
     
     var currentSound: MeditationSound {
