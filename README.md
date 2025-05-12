@@ -10,3 +10,9 @@ This app uses the following Creative Commons audio files from [Freesound.org](ht
 
 - **"20180528 - Ohara silent waterfall 02"** by [LG](https://freesound.org/people/LG/sounds/462750/)  
   [CC BY 4.0 License](https://creativecommons.org/licenses/by/4.0/)
+---
+
+## 🔗 Backend
+
+The backend for this app is available at:  
+👉 [https://github.com/katsumareku/meditation-backend](https://github.com/katsumareku/meditation-backend)
